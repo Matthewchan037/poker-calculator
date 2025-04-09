@@ -7,47 +7,65 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 800px;
+            max-width: 100%;
             margin: 0 auto;
-            padding: 20px;
+            padding: 10px;
             background-color: #f0f8ff;
         }
         h1 {
             text-align: center;
             color: #003366;
+            font-size: 1.8rem;
+            margin-top: 10px;
+            margin-bottom: 15px;
+        }
+        h2 {
+            font-size: 1.4rem;
+            margin-top: 15px;
+            margin-bottom: 10px;
+        }
+        h3 {
+            font-size: 1.2rem;
+            margin-top: 12px;
+            margin-bottom: 8px;
         }
         .card {
             background: white;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            padding: 20px;
-            margin-bottom: 20px;
+            padding: 15px;
+            margin-bottom: 15px;
         }
         .input-group {
             display: flex;
+            flex-wrap: wrap;
             margin-bottom: 10px;
             align-items: center;
         }
         .input-group input, .input-group button {
             padding: 8px;
+            margin-bottom: 5px;
         }
         .input-group input {
             flex-grow: 1;
             margin-right: 10px;
             border: 1px solid #ccc;
             border-radius: 4px;
+            min-width: 100px;
         }
         .input-group label {
             margin-right: 10px;
-            min-width: 150px;
+            width: 100%;
+            margin-bottom: 5px;
         }
         button {
             background-color: #2c80d3;
             color: white;
             border: none;
             border-radius: 4px;
-            padding: 8px 15px;
+            padding: 10px 15px;
             cursor: pointer;
+            font-size: 0.9rem;
         }
         button:hover {
             background-color: #1a5a9e;
@@ -55,7 +73,8 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            margin-top: 15px;
+            font-size: 0.9rem;
         }
         th, td {
             border: 1px solid #ddd;
@@ -79,14 +98,17 @@
         }
         .tabs {
             display: flex;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         .tab {
-            padding: 10px 20px;
+            padding: 10px;
             background-color: #ddd;
             cursor: pointer;
             border-radius: 5px 5px 0 0;
             margin-right: 5px;
+            flex-grow: 1;
+            text-align: center;
+            font-size: 0.9rem;
         }
         .tab.active {
             background-color: white;
@@ -94,14 +116,14 @@
         }
         .tab-content {
             background-color: white;
-            padding: 20px;
+            padding: 15px;
             border-radius: 0 5px 5px 5px;
         }
         .game-settings {
             background-color: #f9f9f9;
-            padding: 15px;
+            padding: 12px;
             border-radius: 8px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         .profit {
             color: green;
@@ -116,6 +138,37 @@
             border-radius: 4px;
             margin: 10px 0;
             border-left: 4px solid #ffeeba;
+        }
+        
+        /* Responsive table styles */
+        @media screen and (max-width: 600px) {
+            .responsive-table {
+                overflow-x: auto;
+            }
+            
+            .input-group {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .input-group input, .input-group button {
+                width: 100%;
+                margin-right: 0;
+                margin-bottom: 8px;
+            }
+            
+            .tabs {
+                flex-direction: row;
+            }
+            
+            .tab {
+                padding: 8px 5px;
+                font-size: 0.85rem;
+            }
+            
+            .card {
+                padding: 10px;
+            }
         }
     </style>
 </head>
@@ -132,33 +185,41 @@
             <div class="game-settings">
                 <h2>Game Settings</h2>
                 <div class="input-group">
-                    <label for="standardBuyIn">Starting Chips: </label>
+                    <label for="standardBuyIn">Standard Buy-in Amount:</label>
                     <input type="number" id="standardBuyIn" value="2000" min="1">
                     <button onclick="updateStandardBuyIn()">Set</button>
                 </div>
-                <p id="currentBuyIn">Current starting chips: 2000 chips</p>
+                <p id="currentBuyIn">Current standard buy-in: 2000 chips</p>
             </div>
             
             <h2>Add Players</h2>
             <div class="input-group">
+                <label for="playerName">Player Name:</label>
                 <input type="text" id="playerName" placeholder="Player Name">
+            </div>
+            <div class="input-group">
+                <label for="buyInTimes">Buy-in Times:</label>
                 <input type="number" id="buyInTimes" placeholder="Buy-in Times" value="1" min="1">
+            </div>
+            <div class="input-group">
                 <button onclick="addPlayer()">Add Player</button>
             </div>
             
-            <table id="playersTable">
-                <thead>
-                    <tr>
-                        <th>Player</th>
-                        <th>Buy-in Times</th>
-                        <th>Starting Chips</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody id="playersList">
-                    <!-- Players will be added here -->
-                </tbody>
-            </table>
+            <div class="responsive-table">
+                <table id="playersTable">
+                    <thead>
+                        <tr>
+                            <th>Player</th>
+                            <th>Buy-in Times</th>
+                            <th>Starting Chips</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="playersList">
+                        <!-- Players will be added here -->
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
     
@@ -170,39 +231,40 @@
                 <!-- Balance information will appear here -->
             </div>
             
-            <table id="endGameTable">
-                <thead>
-                    <tr>
-                        <th>Player</th>
-                        <th>Buy-in Times</th>
-                        <th>Starting Chips</th>
-                        <th>Ending Chips</th>
-                        <th>Profit/Loss</th>
-                    </tr>
-                </thead>
-                <tbody id="endGameList">
-                    <!-- End game data will be added here -->
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <td colspan="2"><strong>Total</strong></td>
-                        <td id="totalStartingChips">0</td>
-                        <td id="totalEndingChips">0</td>
-                        <td id="totalProfitLoss">0</td>
-                    </tr>
-                </tfoot>
-            </table>
-            
-            <div class="game-settings" style="margin-top: 20px;">
-                <h3>Settlement Settings</h3>
-                <div class="input-group">
-                    <label for="divisor">Divisor for Settlement: </label>
-                    <input type="number" id="divisor" value="1" min="1" step="0.01">
-                    <span style="margin-left: 10px;">(Settlement amounts will be divided by this value)</span>
-                </div>
+            <div class="responsive-table">
+                <table id="endGameTable">
+                    <thead>
+                        <tr>
+                            <th>Player</th>
+                            <th>Starting</th>
+                            <th>Ending</th>
+                            <th>Profit/Loss</th>
+                        </tr>
+                    </thead>
+                    <tbody id="endGameList">
+                        <!-- End game data will be added here -->
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td><strong>Total</strong></td>
+                            <td id="totalStartingChips">0</td>
+                            <td id="totalEndingChips">0</td>
+                            <td id="totalProfitLoss">0</td>
+                        </tr>
+                    </tfoot>
+                </table>
             </div>
             
-            <div class="input-group" style="margin-top: 20px;">
+            <div class="game-settings" style="margin-top: 15px;">
+                <h3>Settlement Settings</h3>
+                <div class="input-group">
+                    <label for="divisor">Divisor for Settlement:</label>
+                    <input type="number" id="divisor" value="1" min="1" step="0.01">
+                </div>
+                <p><small>(Settlement amounts will be divided by this value)</small></p>
+            </div>
+            
+            <div class="input-group" style="margin-top: 15px;">
                 <button onclick="calculateSettlement()">Calculate Settlement</button>
             </div>
             
@@ -226,7 +288,7 @@
             }
             
             standardBuyIn = newBuyIn;
-            document.getElementById('currentBuyIn').textContent = `Current starting chips: ${standardBuyIn} chips`;
+            document.getElementById('currentBuyIn').textContent = `Current standard buy-in: ${standardBuyIn} chips`;
             
             // Update existing players' starting chips
             players.forEach(player => {
@@ -340,7 +402,6 @@
                 
                 row.innerHTML = `
                     <td>${player.name}</td>
-                    <td>${player.buyInTimes}</td>
                     <td>${player.startingChips}</td>
                     <td><input type="number" value="${player.endingChips}" 
                         onchange="updateEndingChips(${index}, this.value)"></td>
