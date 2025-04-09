@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poker Chip Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f8ff;
+        }
+        h1 {
+            text-align: center;
+            color: #003366;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .input-group {
+            display: flex;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        .input-group input, .input-group button {
+            padding: 8px;
+        }
+        .input-group input {
+            flex-grow: 1;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .input-group label {
+            margin-right: 10px;
+            min-width: 150px;
+        }
+        button {
+            background-color: #2c80d3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 8px 15px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #1a5a9e;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .settlement {
+            background-color: #e6ffe6;
+            border-left: 4px solid #4CAF50;
+            padding: 10px;
+            margin-top: 20px;
+        }
+        .settlement p {
+            margin: 5px 0;
+        }
+        .hide {
+            display: none;
+        }
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            background-color: #ddd;
+            cursor: pointer;
+            border-radius: 5px 5px 0 0;
+            margin-right: 5px;
+        }
+        .tab.active {
+            background-color: white;
+            font-weight: bold;
+        }
+        .tab-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 0 5px 5px 5px;
+        }
+        .game-settings {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .profit {
+            color: green;
+        }
+        .loss {
+            color: red;
+        }
+        .warning {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            border-left: 4px solid #ffeeba;
+        }
+    </style>
+</head>
+<body>
+    <h1>Poker Chip Calculator</h1>
+    
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('setup')">Game Setup</div>
+        <div class="tab" onclick="switchTab('endgame')">End Game</div>
+    </div>
+    
+    <div id="setup" class="tab-content">
+        <div class="card">
+            <div class="game-settings">
+                <h2>Game Settings</h2>
+                <div class="input-group">
+                    <label for="standardBuyIn">Standard Buy-in Chips: </label>
+                    <input type="number" id="standardBuyIn" value="2000" min="1">
+                    <button onclick="updateStandardBuyIn()">Set</button>
+                </div>
+                <p id="currentBuyIn">Current standard buy-in: 2000 chips</p>
+            </div>
+            
+            <h2>Add Players</h2>
+            <div class="input-group">
+                <input type="text" id="playerName" placeholder="Player Name">
+                <input type="number" id="buyInTimes" placeholder="Buy-in Times" value="1" min="1">
+                <button onclick="addPlayer()">Add Player</button>
+            </div>
+            
+            <table id="playersTable">
+                <thead>
+                    <tr>
+                        <th>Player</th>
+                        <th>Buy-in Times</th>
+                        <th>Starting Chips</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="playersList">
+                    <!-- Players will be added here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <div id="endgame" class="tab-content hide">
+        <div class="card">
+            <h2>End Game Chips Count</h2>
+            
+            <div id="chipBalanceInfo" class="hide warning">
+                <!-- Balance information will appear here -->
+            </div>
+            
+            <table id="endGameTable">
+                <thead>
+                    <tr>
+                        <th>Player</th>
+                        <th>Buy-in Times</th>
+                        <th>Starting Chips</th>
+                        <th>Ending Chips</th>
+                        <th>Profit/Loss</th>
+                    </tr>
+                </thead>
+                <tbody id="endGameList">
+                    <!-- End game data will be added here -->
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="2"><strong>Total</strong></td>
+                        <td id="totalStartingChips">0</td>
+                        <td id="totalEndingChips">0</td>
+                        <td id="totalProfitLoss">0</td>
+                    </tr>
+                </tfoot>
+            </table>
+            
+            <div class="game-settings" style="margin-top: 20px;">
+                <h3>Settlement Settings</h3>
+                <div class="input-group">
+                    <label for="divisor">Divisor for Settlement: </label>
+                    <input type="number" id="divisor" value="1" min="1" step="0.01">
+                    <span style="margin-left: 10px;">(Settlement amounts will be divided by this value)</span>
+                </div>
+            </div>
+            
+            <div class="input-group" style="margin-top: 20px;">
+                <button onclick="calculateSettlement()">Calculate Settlement</button>
+            </div>
+            
+            <div id="settlementResults" class="settlement hide">
+                <h3>Settlement Results</h3>
+                <div id="transactions"></div>
+                <div id="summary" style="margin-top: 15px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let players = [];
+        let standardBuyIn = 2000; // Default standard buy-in amount
+        
+        function updateStandardBuyIn() {
+            const newBuyIn = parseInt(document.getElementById('standardBuyIn').value);
+            if (isNaN(newBuyIn) || newBuyIn <= 0) {
+                alert('Please enter a valid buy-in amount');
+                return;
+            }
+            
+            standardBuyIn = newBuyIn;
+            document.getElementById('currentBuyIn').textContent = `Current standard buy-in: ${standardBuyIn} chips`;
+            
+            // Update existing players' starting chips
+            players.forEach(player => {
+                player.startingChips = player.buyInTimes * standardBuyIn;
+            });
+            
+            // Update tables
+            updatePlayersTable();
+        }
+        
+        function switchTab(tabId) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hide');
+            });
+            
+            // Show the selected tab content
+            document.getElementById(tabId).classList.remove('hide');
+            
+            // Update active tab
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Find the clicked tab and make it active
+            document.querySelectorAll('.tab').forEach(tab => {
+                if (tab.textContent.toLowerCase().includes(tabId)) {
+                    tab.classList.add('active');
+                }
+            });
+            
+            // Update end game table if switching to end game tab
+            if (tabId === 'endgame') {
+                updateEndGameTable();
+            }
+        }
+        
+        function addPlayer() {
+            const playerName = document.getElementById('playerName').value.trim();
+            const buyInTimes = parseInt(document.getElementById('buyInTimes').value);
+            
+            if (!playerName) {
+                alert('Please enter player name');
+                return;
+            }
+            
+            if (isNaN(buyInTimes) || buyInTimes < 1) {
+                alert('Please enter valid buy-in times (minimum 1)');
+                return;
+            }
+            
+            // Check if player already exists
+            if (players.some(p => p.name === playerName)) {
+                alert('Player already exists');
+                return;
+            }
+            
+            // Calculate starting chips based on standard buy-in and times
+            const startingChips = buyInTimes * standardBuyIn;
+            
+            players.push({
+                name: playerName,
+                buyInTimes: buyInTimes,
+                startingChips: startingChips,
+                endingChips: 0
+            });
+            
+            // Clear inputs
+            document.getElementById('playerName').value = '';
+            document.getElementById('buyInTimes').value = '1';
+            
+            // Update the table
+            updatePlayersTable();
+        }
+        
+        function removePlayer(index) {
+            players.splice(index, 1);
+            updatePlayersTable();
+        }
+        
+        function updatePlayersTable() {
+            const tbody = document.getElementById('playersList');
+            tbody.innerHTML = '';
+            
+            players.forEach((player, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${player.name}</td>
+                    <td>${player.buyInTimes}</td>
+                    <td>${player.startingChips}</td>
+                    <td><button onclick="removePlayer(${index})">Remove</button></td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        function updateEndGameTable() {
+            const tbody = document.getElementById('endGameList');
+            tbody.innerHTML = '';
+            
+            let totalStarting = 0;
+            let totalEnding = 0;
+            
+            players.forEach((player, index) => {
+                const row = document.createElement('tr');
+                const profit = player.endingChips - player.startingChips;
+                const profitClass = profit >= 0 ? 'profit' : 'loss';
+                
+                totalStarting += player.startingChips;
+                totalEnding += player.endingChips;
+                
+                row.innerHTML = `
+                    <td>${player.name}</td>
+                    <td>${player.buyInTimes}</td>
+                    <td>${player.startingChips}</td>
+                    <td><input type="number" value="${player.endingChips}" 
+                        onchange="updateEndingChips(${index}, this.value)"></td>
+                    <td class="${profitClass}">${profit}</td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            // Update totals row
+            document.getElementById('totalStartingChips').textContent = totalStarting;
+            document.getElementById('totalEndingChips').textContent = totalEnding;
+            
+            const totalProfitLoss = totalEnding - totalStarting;
+            document.getElementById('totalProfitLoss').textContent = totalProfitLoss;
+            document.getElementById('totalProfitLoss').className = totalProfitLoss >= 0 ? 'profit' : 'loss';
+            
+            // Check chip balance and show warning if needed
+            checkChipBalance(totalStarting, totalEnding);
+        }
+        
+        function updateEndingChips(playerIndex, value) {
+            players[playerIndex].endingChips = parseInt(value);
+            updateEndGameTable();
+        }
+        
+        function checkChipBalance(totalStarting, totalEnding) {
+            const balanceDiv = document.getElementById('chipBalanceInfo');
+            
+            if (totalStarting !== totalEnding) {
+                const difference = totalEnding - totalStarting;
+                
+                let message = '';
+                if (difference > 0) {
+                    message = `Warning: Total ending chips exceeds total starting chips by ${difference} chips. You need to remove ${difference} chips from someone's ending count.`;
+                } else {
+                    message = `Warning: Total ending chips is less than total starting chips by ${Math.abs(difference)} chips. You need to add ${Math.abs(difference)} chips to someone's ending count.`;
+                }
+                
+                balanceDiv.innerHTML = message;
+                balanceDiv.classList.remove('hide');
+            } else {
+                balanceDiv.classList.add('hide');
+            }
+        }
+        
+        function calculateSettlement() {
+            // First, make sure ending chips are assigned
+            let totalStarting = 0;
+            let totalEnding = 0;
+            
+            players.forEach(player => {
+                totalStarting += player.startingChips;
+                totalEnding += player.endingChips;
+            });
+            
+            // Check if totals match
+            if (totalStarting !== totalEnding) {
+                alert(`Error: Total starting chips (${totalStarting}) doesn't match total ending chips (${totalEnding}). Please adjust chip counts to balance.`);
+                return;
+            }
+            
+            // Get the divisor
+            const divisor = parseFloat(document.getElementById('divisor').value);
+            if (isNaN(divisor) || divisor <= 0) {
+                alert('Please enter a valid divisor (positive number)');
+                return;
+            }
+            
+            // Calculate net positions
+            let creditors = [];
+            let debtors = [];
+            
+            players.forEach(player => {
+                const netPosition = player.endingChips - player.startingChips;
+                
+                if (netPosition > 0) {
+                    creditors.push({
+                        name: player.name,
+                        amount: netPosition
+                    });
+                } else if (netPosition < 0) {
+                    debtors.push({
+                        name: player.name,
+                        amount: -netPosition // Make positive for easier calculations
+                    });
+                }
+            });
+            
+            // Sort by amount (largest first)
+            creditors.sort((a, b) => b.amount - a.amount);
+            debtors.sort((a, b) => b.amount - a.amount);
+            
+            // Calculate transactions
+            let transactions = [];
+            
+            while (creditors.length > 0 && debtors.length > 0) {
+                const creditor = creditors[0];
+                const debtor = debtors[0];
+                
+                const amount = Math.min(creditor.amount, debtor.amount);
+                
+                transactions.push({
+                    from: debtor.name,
+                    to: creditor.name,
+                    amount: amount,
+                    dividedAmount: (amount / divisor).toFixed(2)
+                });
+                
+                creditor.amount -= amount;
+                debtor.amount -= amount;
+                
+                if (creditor.amount === 0) creditors.shift();
+                if (debtor.amount === 0) debtors.shift();
+            }
+            
+            // Display transactions
+            const transactionsDiv = document.getElementById('transactions');
+            transactionsDiv.innerHTML = '';
+            
+            if (divisor === 1) {
+                // Simple display when divisor is 1
+                transactions.forEach(transaction => {
+                    const p = document.createElement('p');
+                    p.textContent = `${transaction.from} pays ${transaction.to}: ${transaction.amount} chips`;
+                    transactionsDiv.appendChild(p);
+                });
+            } else {
+                // Show both original and divided amounts
+                transactions.forEach(transaction => {
+                    const p = document.createElement('p');
+                    p.textContent = `${transaction.from} pays ${transaction.to}: ${transaction.amount} chips ÷ ${divisor} = ${transaction.dividedAmount} chips`;
+                    transactionsDiv.appendChild(p);
+                });
+            }
+            
+            // Display summary
+            const summaryDiv = document.getElementById('summary');
+            summaryDiv.innerHTML = '<h4>Game Summary</h4>';
+            
+            players.forEach(player => {
+                const profit = player.endingChips - player.startingChips;
+                const p = document.createElement('p');
+                
+                if (profit > 0) {
+                    p.textContent = `${player.name} won ${profit} chips`;
+                    p.style.color = 'green';
+                } else if (profit < 0) {
+                    p.textContent = `${player.name} lost ${-profit} chips`;
+                    p.style.color = 'red';
+                } else {
+                    p.textContent = `${player.name} broke even`;
+                }
+                
+                summaryDiv.appendChild(p);
+            });
+            
+            // Show results
+            document.getElementById('settlementResults').classList.remove('hide');
+        }
+        
+        // Initialize the app
+        updatePlayersTable();
+    </script>
+</body>
+</html>
