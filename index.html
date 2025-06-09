@@ -278,6 +278,18 @@
 
     <script>
         let players = [];
+        const playerColors = [
+            '#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231',
+            '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe',
+            '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000',
+            '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080'
+        ];
+        let colorIndex = 0;
+
+        function getPlayerColor(name) {
+            const player = players.find(p => p.name === name);
+            return player ? player.color : '#000';
+        }
         let standardBuyIn = 2000; // Default standard buy-in amount
         
         function updateStandardBuyIn() {
@@ -349,11 +361,15 @@
             // Calculate starting chips based on standard buy-in and times
             const startingChips = buyInTimes * standardBuyIn;
             
+            const color = playerColors[colorIndex % playerColors.length];
+            colorIndex++;
+
             players.push({
                 name: playerName,
                 buyInTimes: buyInTimes,
                 startingChips: startingChips,
-                endingChips: 0
+                endingChips: 0,
+                color: color
             });
             
             // Clear inputs
@@ -525,14 +541,14 @@
                 // Simple display when divisor is 1
                 transactions.forEach(transaction => {
                     const p = document.createElement('p');
-                    p.textContent = `${transaction.from} pays ${transaction.to}: ${transaction.amount} chips`;
+                    p.innerHTML = `<span style="color:${getPlayerColor(transaction.from)}">${transaction.from}</span> pays <span style="color:${getPlayerColor(transaction.to)}">${transaction.to}</span>: ${transaction.amount} chips`;
                     transactionsDiv.appendChild(p);
                 });
             } else {
                 // Show both original and divided amounts
                 transactions.forEach(transaction => {
                     const p = document.createElement('p');
-                    p.textContent = `${transaction.from} pays ${transaction.to}: ${transaction.amount} chips ÷ ${divisor} = ${transaction.dividedAmount} chips`;
+                    p.innerHTML = `<span style="color:${getPlayerColor(transaction.from)}">${transaction.from}</span> pays <span style="color:${getPlayerColor(transaction.to)}">${transaction.to}</span>: ${transaction.amount} chips ÷ ${divisor} = ${transaction.dividedAmount} chips`;
                     transactionsDiv.appendChild(p);
                 });
             }
@@ -544,17 +560,18 @@
             players.forEach(player => {
                 const profit = player.endingChips - player.startingChips;
                 const p = document.createElement('p');
-                
+                const nameHTML = `<span style="color:${player.color}">${player.name}</span>`;
+
                 if (profit > 0) {
-                    p.textContent = `${player.name} won ${profit} chips`;
+                    p.innerHTML = `${nameHTML} won ${profit} chips`;
                     p.style.color = 'green';
                 } else if (profit < 0) {
-                    p.textContent = `${player.name} lost ${-profit} chips`;
+                    p.innerHTML = `${nameHTML} lost ${-profit} chips`;
                     p.style.color = 'red';
                 } else {
-                    p.textContent = `${player.name} broke even`;
+                    p.innerHTML = `${nameHTML} broke even`;
                 }
-                
+
                 summaryDiv.appendChild(p);
             });
             
